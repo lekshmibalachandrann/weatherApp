@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <!-- fav icon -->
+     <link rel="icon" href="https://cdn.jim-nielsen.com/ios/512/weather-2019-02-07.png?rf=1024">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+          integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <div style="background-image:url('https://www.shutterstock.com/shutterstock/videos/1107421037/thumb/10.jpg?ip=x480'); height:100vh;width:100%; display: flex; justify-content:center; align-items:center; flex-direction: column;">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4 border-secondary p-4">
+              <h1 class="text-light text-center">WEATHER</h1>  
+              <div class="d-flex mt-4">
+                <input type="text" placeholder="Enter city" class="form-control" id="cityName">
+                <button type="button" class="btn btn-warning ms-3" onclick="search()">Search</button>
+                <button type="button" class="btn btn-warning ms-3" onclick="refreshData()">↺</button>
+              </div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    </div>
+     
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10" id="result">
+              
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+  </div>
+  
+</body>
+<script>
+    let currentCity = '';
+
+    const search = async () => {
+        const city = document.getElementById("cityName").value;
+        if (city) {
+            currentCity = city;
+            await fetchWeatherData(city);
+        }
+    };
+
+   
+   const refreshData=()=>{
+    document.getElementById("cityName").value='';
+    document.getElementById("result").innerHTML='';
+   }
+
+    const fetchWeatherData = async (city) => {
+        try {
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=81440fdccf20a3c90872b6aa908e0525&units=metric`);
+            const data = await response.json();
+            
+            if (data.cod !== 200) {
+                result.innerHTML = `<div class="alert alert-danger">City not found. Please enter a valid city name.</div>`;
+                return;
+            }
+
+            const cityname = data.name;
+            const temperature = data.main.temp;
+            const timezone = data.timezone;
+            const country = data.sys.country;
+            const humidity = data.main.humidity;
+            const pressure = data.main.pressure;
+            const wind = data.wind.speed;
+            const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
+            const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+
+            
+            let backgroundClass = '';
+            let weatherImage = '';
+
+            if (temperature >= 30) {
+                backgroundClass = 'bg-warning';
+                weatherImage = 'https://media.istockphoto.com/id/1150050227/photo/heat-wave-of-extreme-sun-and-sky-background-hot-weather-with-global-warming-concept.jpg?s=612x612&w=0&k=20&c=EjBSIEDX39FRrARa7xiZyJtoXdgl3mePScIEQq9iW1U='; 
+            } else if (temperature < 30 && temperature >= 15) {
+                backgroundClass = 'bg-primary'; 
+                weatherImage = 'https://media.istockphoto.com/id/512218646/photo/storm-sky-rain.jpg?s=612x612&w=0&k=20&c=RoUDM9BMwqW8NkPXjzAzlDKCHPOmdZhmmeT3jGA2EaM=';
+            } else {
+                backgroundClass = 'bg-secondary'; 
+                weatherImage = 'https://visualcue.com/2016/wp-content/uploads/2016/01/jan22-feature.jpg'; 
+            }
+
+            result.innerHTML = `
+                <div class="card mb-3 p-3 ${backgroundClass}" style="max-width: 100%; background-size: cover;">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img src="${weatherImage}" class="img-fluid rounded-start" alt="weather icon">
+                            <h5 class="card-title text-center mt-3">${cityname}</h5>
+                            <ul class="list-group list-group-flush border">
+                                <li class="list-group-item">Temperature: ${temperature}°C</li>
+                                <li class="list-group-item">Time Zone: ${timezone}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush border">
+                                    <li class="list-group-item">Country: ${country}</li>
+                                    <li class="list-group-item">Humidity: ${humidity}%</li>
+                                    <li class="list-group-item">Pressure: ${pressure} hPa</li>
+                                    <li class="list-group-item">Wind: ${wind} m/s</li>
+                                    <li class="list-group-item"><i class="fa-solid fa-sun"></i> Sunrise: ${sunrise}</li>
+                                    <li class="list-group-item"><i class="fa-solid fa-moon"></i> Sunset: ${sunset}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+            result.innerHTML = `<div class="alert alert-danger">Failed to fetch weather data. Please try again later.</div>`;
+        }
+    };
+</script>
+</html>
